@@ -179,6 +179,9 @@
                     <button id="navNewsBtn" onclick="switchPage('news')" class="px-5 py-1.5 rounded-md text-xs font-semibold transition bg-[#0084C8] text-white shadow">
                         Plumbing News Feed
                     </button>
+                    <button id="navInflowBtn" onclick="switchPage('inflow')" class="px-5 py-1.5 rounded-md text-xs font-semibold transition text-slate-300 hover:text-white">
+                        Johnson County Inflow
+                    </button>
                     <button id="navAboutBtn" onclick="switchPage('about')" class="px-5 py-1.5 rounded-md text-xs font-semibold transition text-slate-300 hover:text-white">
                         About Very Good Plumber
                     </button>
@@ -329,6 +332,32 @@
                             </a>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: JOHNSON COUNTY INFLOW PAGE -->
+        <div id="pageInflow" class="hidden">
+            <div class="max-w-3xl mx-auto text-center space-y-8 py-12">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-sky-500/10 border border-sky-500/30 mb-2">
+                    <span class="text-4xl">💧</span>
+                </div>
+                <div class="space-y-3">
+                    <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+                        Coming Soon
+                    </span>
+                    <h2 class="text-3xl font-extrabold text-white sm:text-4xl">Johnson County Inflow</h2>
+                    <p class="text-lg text-slate-300 max-w-xl mx-auto leading-relaxed">
+                        Photos, project details, and regional water inflow updates for Johnson County are on the way.
+                    </p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-4">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        This section will feature inflow-related work, water main projects, and local system updates across Overland Park, Olathe, Shawnee, Lenexa, and surrounding Johnson County communities.
+                    </p>
+                    <p class="text-slate-500 text-xs">
+                        Content and photos coming soon — check back later.
+                    </p>
                 </div>
             </div>
         </div>
@@ -814,19 +843,31 @@
         function switchPage(page) {
             const newsSec = document.getElementById('pageNews');
             const aboutSec = document.getElementById('pageAbout');
+            const inflowSec = document.getElementById('pageInflow');
             const navNewsBtn = document.getElementById('navNewsBtn');
             const navAboutBtn = document.getElementById('navAboutBtn');
+            const navInflowBtn = document.getElementById('navInflowBtn');
+
+            const inactive = 'px-5 py-1.5 rounded-md text-xs font-semibold transition text-slate-300 hover:text-white';
+            const active = 'px-5 py-1.5 rounded-md text-xs font-semibold transition bg-[#0084C8] text-white shadow';
+
+            // Hide all pages
+            newsSec.classList.add('hidden');
+            aboutSec.classList.add('hidden');
+            inflowSec.classList.add('hidden');
+            navNewsBtn.className = inactive;
+            navAboutBtn.className = inactive;
+            navInflowBtn.className = inactive;
 
             if (page === 'about') {
-                newsSec.classList.add('hidden');
                 aboutSec.classList.remove('hidden');
-                navAboutBtn.className = 'px-5 py-1.5 rounded-md text-xs font-semibold transition bg-[#0084C8] text-white shadow';
-                navNewsBtn.className = 'px-5 py-1.5 rounded-md text-xs font-semibold transition text-slate-300 hover:text-white';
+                navAboutBtn.className = active;
+            } else if (page === 'inflow') {
+                inflowSec.classList.remove('hidden');
+                navInflowBtn.className = active;
             } else {
-                aboutSec.classList.add('hidden');
                 newsSec.classList.remove('hidden');
-                navNewsBtn.className = 'px-5 py-1.5 rounded-md text-xs font-semibold transition bg-[#0084C8] text-white shadow';
-                navAboutBtn.className = 'px-5 py-1.5 rounded-md text-xs font-semibold transition text-slate-300 hover:text-white';
+                navNewsBtn.className = active;
             }
         }
 
