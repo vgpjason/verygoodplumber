@@ -28,48 +28,84 @@
             object-fit: contain;
         }
 
-        /* Animated Water Ripples Background in Header */
-        .water-header {
+        /* Animated Toilet Bowl / Swirl Header Background */
+        .flush-header {
             position: relative;
-            background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
+            background: radial-gradient(circle at center, #1b263b 0%, #0d1b2a 100%);
             overflow: hidden;
         }
-        
-        .water-wave {
+
+        /* Swirling water vortex layer */
+        .vortex {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 200%;
-            height: 40px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.08,130.83,121.2,200,115.8,241.09,112.59,281.37,92,321.39,56.44Z" fill="%230084C8" opacity="0.3"></path></svg>') repeat-x;
-            animation: wave 10s linear infinite;
-        }
-
-        .water-wave.wave2 {
-            bottom: -5px;
-            opacity: 0.5;
-            animation: wave 7s linear infinite reverse;
-        }
-
-        @keyframes wave {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        /* Floating background bubble animation */
-        .bubble {
-            position: absolute;
-            background: rgba(0, 132, 200, 0.15);
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            margin-top: -400px;
+            margin-left: -400px;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(0, 132, 200, 0.25) 50%, transparent 100%);
             border-radius: 50%;
-            bottom: -20px;
-            animation: floatUp 8s infinite ease-in-out;
+            animation: spinSwirl 8s linear infinite;
             pointer-events: none;
         }
 
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(0.8); opacity: 0; }
-            50% { opacity: 0.6; }
-            100% { transform: translateY(-300px) scale(1.2); opacity: 0; }
+        .vortex-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            height: 500px;
+            margin-top: -250px;
+            margin-left: -250px;
+            background: conic-gradient(from 180deg, transparent 0%, rgba(0, 200, 255, 0.2) 60%, transparent 100%);
+            border-radius: 50%;
+            animation: spinSwirl 5s linear infinite reverse;
+            pointer-events: none;
+        }
+
+        @keyframes spinSwirl {
+            from { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.05); }
+            to { transform: rotate(360deg) scale(1); }
+        }
+
+        /* Full Page Flush Overlay Effect */
+        #flushOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, rgba(0, 132, 200, 0.95) 0%, rgba(13, 27, 42, 0.98) 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #flushOverlay.flushing {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .flush-spinner {
+            width: 120px;
+            height: 120px;
+            border: 8px solid rgba(255, 255, 255, 0.2);
+            border-top: 8px solid #ffffff;
+            border-radius: 50%;
+            animation: flushVortex 0.8s ease-in-out infinite;
+        }
+
+        @keyframes flushVortex {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(360deg) scale(0.6); }
+            100% { transform: rotate(720deg) scale(0.1); }
         }
 
         /* Card animations and hover effect */
@@ -89,29 +125,26 @@
         }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--brand-blue);
-            border-radius: 4px;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: var(--brand-blue); border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- Header Section -->
-    <header class="water-header border-b border-slate-800 relative z-10 shadow-xl">
-        <!-- Background Bubbles -->
-        <div class="bubble w-6 h-6 left-[10%]" style="animation-delay: 0s;"></div>
-        <div class="bubble w-10 h-10 left-[35%]" style="animation-delay: 2s;"></div>
-        <div class="bubble w-4 h-4 left-[65%]" style="animation-delay: 4s;"></div>
-        <div class="bubble w-8 h-8 left-[85%]" style="animation-delay: 1s;"></div>
+    <!-- Full Page Flush Overlay -->
+    <div id="flushOverlay">
+        <div class="flush-spinner mb-4"></div>
+        <p class="text-xl font-extrabold text-white tracking-widest uppercase">Flushing & Refreshing...</p>
+    </div>
 
-        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 relative z-20">
+    <!-- Header Section -->
+    <header class="flush-header border-b border-slate-800 relative z-10 shadow-xl py-6">
+        <!-- Animated Swirl Background Layers -->
+        <div class="vortex"></div>
+        <div class="vortex-inner"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 
                 <!-- Logo & Title -->
@@ -129,7 +162,7 @@
                     </div>
                 </div>
 
-                <!-- Call & SMS Buttons -->
+                <!-- Call, SMS & Flush Interactive Buttons -->
                 <div class="flex flex-wrap justify-center items-center gap-3">
                     <a href="tel:9132065822" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm px-4 py-2 rounded-lg transition duration-200 shadow-md flex items-center gap-2 border border-emerald-400/30">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
@@ -140,11 +173,17 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                         Text 913-206-5822
                     </a>
+
+                    <!-- Interactive Flush Handle Button -->
+                    <button onclick="triggerFlushAnimation()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 font-semibold text-sm px-3 py-2 rounded-lg transition duration-200 shadow-md flex items-center gap-1.5" title="Flush & Reload News Feed">
+                        <span>🚽</span>
+                        <span>Flush Feed</span>
+                    </button>
                 </div>
 
             </div>
 
-            <!-- Page Toggle Nav -->
+            <!-- Page Navigation -->
             <div class="mt-6 flex justify-center border-t border-slate-800/80 pt-4">
                 <nav class="inline-flex rounded-lg bg-slate-900/80 p-1 border border-slate-800">
                     <button id="navNewsBtn" onclick="switchPage('news')" class="px-5 py-1.5 rounded-md text-xs font-semibold transition bg-[#0084C8] text-white">
@@ -156,10 +195,6 @@
                 </nav>
             </div>
         </div>
-
-        <!-- Wave layers -->
-        <div class="water-wave"></div>
-        <div class="water-wave wave2"></div>
     </header>
 
     <!-- Main Content -->
@@ -354,7 +389,7 @@
 
     <!-- JavaScript Application Code -->
     <script>
-        // Category Configurations & Target RSS Search Queries
+        // Category Configurations
         const categories = [
             { id: 'sump', name: 'Sump Pumps', query: 'sump pumps plumbing OR basement flooding' },
             { id: 'purification', name: 'Water Purification', query: 'water filtration OR water purification plumbing' },
@@ -368,7 +403,19 @@
         let activeCategory = categories[0];
         let allArticles = [];
 
-        // Switch between News and About Pages
+        // Full Page Flush Trigger
+        function triggerFlushAnimation() {
+            const overlay = document.getElementById('flushOverlay');
+            overlay.classList.add('flushing');
+
+            setTimeout(() => {
+                // Refresh active news view
+                fetchNews(activeCategory);
+                overlay.classList.remove('flushing');
+            }, 1200);
+        }
+
+        // Switch Page Nav
         function switchPage(page) {
             const newsSec = document.getElementById('pageNews');
             const aboutSec = document.getElementById('pageAbout');
@@ -388,7 +435,7 @@
             }
         }
 
-        // News Fetcher via rss2json API
+        // News Fetcher
         async function fetchNews(category) {
             const newsGrid = document.getElementById('newsGrid');
             const loadingSpinner = document.getElementById('loadingSpinner');
@@ -423,7 +470,7 @@
             }
         }
 
-        // Render articles into responsive grid cards
+        // Render articles
         function renderArticles(articles) {
             const newsGrid = document.getElementById('newsGrid');
             const articleCount = document.getElementById('articleCount');
@@ -464,7 +511,7 @@
             });
         }
 
-        // Setup Category Filter Buttons
+        // Setup Category Buttons
         function setupCategories() {
             const container = document.getElementById('categoryContainer');
             categories.forEach(cat => {
@@ -489,7 +536,7 @@
             });
         }
 
-        // Setup Search Filter
+        // Search Filter
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const filtered = allArticles.filter(item => 
@@ -499,7 +546,7 @@
             renderArticles(filtered);
         });
 
-        // Initialize Page
+        // Init
         document.addEventListener('DOMContentLoaded', () => {
             setupCategories();
             fetchNews(activeCategory);
