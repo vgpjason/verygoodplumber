@@ -42,7 +42,7 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            filter: url('#waterTurbulence');
+            filter: url('#waterTurbulence') blur(3.5px);
         }
 
         /* Full Page Flush Overlay */
@@ -111,10 +111,10 @@
     <!-- SVG Turbulence Filter for Liquid Wave Optics -->
     <svg style="display:none;">
         <filter id="waterTurbulence">
-            <feTurbulence type="fractalNoise" baseFrequency="0.01 0.02" numOctaves="2" result="noise">
-                <animate attributeName="baseFrequency" dur="15s" values="0.01 0.02; 0.015 0.01; 0.01 0.02" repeatCount="indefinite"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.02 0.03" numOctaves="3" result="noise">
+                <animate attributeName="baseFrequency" dur="40s" values="0.02 0.03; 0.025 0.02; 0.02 0.03" repeatCount="indefinite"/>
             </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="48" xChannelSelector="R" yChannelSelector="G"/>
         </filter>
     </svg>
 
@@ -156,6 +156,11 @@
                         <span>🚽</span>
                         <span>Flush Feed</span>
                     </button>
+
+                    <a href="https://www.waterone.org/339/Water-Quality-Reports" target="_blank" rel="noopener noreferrer" class="bg-sky-900/80 hover:bg-sky-800 text-sky-100 border border-sky-600/40 font-semibold text-sm px-3.5 py-2 rounded-lg transition duration-200 shadow-md flex items-center gap-1.5" title="WaterOne Johnson County Water Quality Report">
+                        <span>💧</span>
+                        <span>Water Quality Report</span>
+                    </a>
                 </div>
 
             </div>
@@ -334,6 +339,8 @@
                 <div>
                     <p class="text-sm font-semibold text-[#0084C8]">913-206-5822</p>
                     <a href="https://verygoodplumber.com" target="_blank" class="text-xs text-slate-400 hover:text-emerald-400 transition">VeryGoodPlumber.com</a>
+                    <br>
+                    <a href="https://www.waterone.org/339/Water-Quality-Reports" target="_blank" rel="noopener noreferrer" class="text-xs text-sky-400 hover:text-sky-300 transition">WaterOne Water Quality Report</a>
                 </div>
             </div>
         </div>
@@ -372,8 +379,8 @@
                 this.radius = initial ? Math.random() * maxRadius + 20 : maxRadius;
                 this.angle = Math.random() * Math.PI * 2;
                 
-                this.speed = 0.6 + Math.random() * 0.7; 
-                this.angularVelocity = 0.022 + Math.random() * 0.018;
+                this.speed = 0.18 + Math.random() * 0.22; 
+                this.angularVelocity = 0.006 + Math.random() * 0.005;
                 this.length = 25 + Math.random() * 45;
                 this.width = 1.5 + Math.random() * 2.5;
                 
@@ -388,7 +395,7 @@
             }
 
             update() {
-                const spinAcceleration = (120 / (this.radius + 15)) * flushSpeedMultiplier;
+                const spinAcceleration = (35 / (this.radius + 15)) * flushSpeedMultiplier;
                 this.angle += this.angularVelocity * spinAcceleration;
                 this.radius -= this.speed * flushSpeedMultiplier;
 
@@ -428,7 +435,7 @@
         }
 
         function drawRipples() {
-            time += 0.02 * flushSpeedMultiplier;
+            time += 0.007 * flushSpeedMultiplier;
             ctx.save();
             
             for (let i = 1; i <= 4; i++) {
@@ -800,41 +807,63 @@
 
             newsGrid.innerHTML = '';
             currentCategoryTitle.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-[#0084C8]"></span> ${category.name}`;
-            articleCount.innerText = 'Fetching live feed...';
+            articleCount.innerText = 'Loading articles...';
 
-            let fetchedArticles = [];
+            // Always start with reliable curated fallback so articles appear immediately
+            allArticles = (category.fallback && category.fallback.length) ? category.fallback.slice() : [];
+            renderArticles(allArticles);
+
+            // Try live RSS in the background (non-blocking). Many free RSS converters
+            // are unreliable or rate-limited, so we never depend on them.
             try {
-                const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(category.rssUrl)}&api_key=&count=20`;
-                const res = await fetch(apiUrl);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+                const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(category.rssUrl)}&count=15`;
+                const res = await fetch(apiUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!res.ok) throw new Error('RSS response not ok');
                 const data = await res.json();
 
-                if (data.status === 'ok' && data.items && data.items.length > 0) {
-                    fetchedArticles = data.items.map((item) => {
-                        let cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '').trim() : '';
-                        if (cleanDesc.length > 180) {
-                            cleanDesc = cleanDesc.substring(0, 180) + '...';
+                if (data && data.status === 'ok' && Array.isArray(data.items) && data.items.length > 0) {
+                    const liveArticles = data.items.map((item) => {
+                        let cleanDesc = '';
+                        if (item.description) {
+                            cleanDesc = String(item.description).replace(/<[^>]*>?/gm, '').trim();
+                            if (cleanDesc.length > 180) cleanDesc = cleanDesc.substring(0, 180) + '...';
                         }
-
                         return {
-                            title: item.title,
-                            author: item.author || category.name.replace(/^[^\w]+/, ''),
+                            title: item.title || 'Untitled',
+                            author: item.author || category.name.replace(/^[^\w]+/, '').trim() || 'Plumbing News',
                             pubDate: item.pubDate || new Date().toISOString(),
-                            link: item.link,
-                            description: cleanDesc || 'Click below to read full article details and technical specifications.'
+                            link: item.link || '#',
+                            description: cleanDesc || 'Click below to read the full article.'
                         };
-                    });
+                    }).filter(a => a.title && a.title.length > 3);
+
+                    if (liveArticles.length >= 3) {
+                        allArticles = liveArticles;
+                        // Only re-render if user hasn't typed a search query
+                        const searchVal = (document.getElementById('searchInput') || {}).value || '';
+                        if (!searchVal.trim()) {
+                            renderArticles(allArticles);
+                        }
+                    }
                 }
             } catch (err) {
-                console.log('Using expanded fallback feed for instant high-speed render');
+                // Keep the curated fallback — this is expected and preferred for reliability
+                console.log('Live feed unavailable, using curated local articles.');
             }
+        }
 
-            if (fetchedArticles.length === 0) {
-                allArticles = category.fallback;
-            } else {
-                allArticles = fetchedArticles;
-            }
-
-            renderArticles(allArticles);
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         function renderArticles(articles) {
@@ -842,33 +871,43 @@
             const articleCount = document.getElementById('articleCount');
             newsGrid.innerHTML = '';
 
-            articleCount.innerText = `${articles.length} articles available`;
+            const list = Array.isArray(articles) ? articles : [];
+            articleCount.innerText = `${list.length} articles available`;
 
-            if (articles.length === 0) {
+            if (list.length === 0) {
                 newsGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">No articles matching your search criteria.</div>`;
                 return;
             }
 
-            articles.forEach((item, index) => {
-                const date = new Date(item.pubDate).toLocaleDateString('en-US', {
-                    month: 'short', day: 'numeric', year: 'numeric'
-                });
+            list.forEach((item, index) => {
+                let date = 'Recent';
+                try {
+                    const d = new Date(item.pubDate);
+                    if (!isNaN(d.getTime())) {
+                        date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    }
+                } catch (e) {}
 
                 const card = document.createElement('article');
                 card.className = 'news-card bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col justify-between shadow-lg';
                 card.style.animationDelay = `${index * 0.04}s`;
 
+                const safeTitle = escapeHtml(item.title || 'Untitled');
+                const safeAuthor = escapeHtml(item.author || 'Plumbing News');
+                const safeDesc = escapeHtml(item.description || '');
+                const safeLink = (item.link && String(item.link).startsWith('http')) ? item.link : '#';
+
                 card.innerHTML = `
                     <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
                         <div>
                             <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
-                                <span class="bg-slate-800 text-[#0084C8] px-2.5 py-1 rounded border border-slate-700 font-semibold line-clamp-1 max-w-[180px]">${item.author}</span>
+                                <span class="bg-slate-800 text-[#0084C8] px-2.5 py-1 rounded border border-slate-700 font-semibold line-clamp-1 max-w-[180px]">${safeAuthor}</span>
                                 <time class="text-slate-400">${date}</time>
                             </div>
-                            <h4 class="font-bold text-slate-100 text-base mb-2 hover:text-[#0084C8] transition leading-snug">${item.title}</h4>
-                            <p class="text-xs text-slate-400 line-clamp-4 leading-relaxed">${item.description}</p>
+                            <h4 class="font-bold text-slate-100 text-base mb-2 hover:text-[#0084C8] transition leading-snug">${safeTitle}</h4>
+                            <p class="text-xs text-slate-400 line-clamp-4 leading-relaxed">${safeDesc}</p>
                         </div>
-                        <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0084C8] hover:text-sky-300 transition pt-3 border-t border-slate-800/80">
+                        <a href="${safeLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0084C8] hover:text-sky-300 transition pt-3 border-t border-slate-800/80">
                             Read Full Article
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                         </a>
