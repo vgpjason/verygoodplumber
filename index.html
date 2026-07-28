@@ -38,11 +38,11 @@
         /* Water Header Container */
         .flush-header {
             position: relative;
-            background: radial-gradient(circle at 50% 50%, #0369a1 0%, #0c4a6e 45%, #030712 100%);
+            background: radial-gradient(circle at 50% 50%, #0c4a6e 0%, #020617 55%, #010814 100%);
             overflow: hidden;
         }
 
-        /* Real Water Canvas */
+        /* Drain particle canvas (accelerating plunge effect) */
         #vortexCanvas {
             position: absolute;
             top: 0;
@@ -50,15 +50,10 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            filter: url('#waterTurbulence') blur(2.8px);
+            filter: blur(2px);
             transform: translateZ(0);
-            will-change: filter, transform;
+            will-change: transform;
             backface-visibility: hidden;
-        }
-
-        /* Firefox renders heavy SVG displacement poorly — use a softer pure CSS look instead */
-        .firefox-water #vortexCanvas {
-            filter: blur(4.5px) contrast(1.15) saturate(1.25);
         }
 
         /* Full Page Flush Overlay */
@@ -124,15 +119,6 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- SVG Turbulence Filter for Liquid Wave Optics -->
-    <svg style="display:none;">
-        <filter id="waterTurbulence" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.018 0.028" numOctaves="3" result="noise" seed="2">
-                <animate attributeName="baseFrequency" dur="36s" values="0.018 0.028; 0.024 0.018; 0.018 0.028" repeatCount="indefinite"/>
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="38" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
-    </svg>
 
     <!-- Full Page Flush Overlay -->
     <div id="flushOverlay">
@@ -401,155 +387,115 @@
         const canvas = document.getElementById('vortexCanvas');
         const ctx = canvas.getContext('2d', { alpha: true });
 
-        // Firefox handles SVG feDisplacementMap on canvas poorly — switch to CSS-only softness
-        const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-        if (isFirefox) {
-            document.documentElement.classList.add('firefox-water');
-        }
+        const blueShades = ["14, 116, 144", "14, 165, 233", "56, 189, 248", "186, 230, 253"];
 
-        let width, height, centerX, centerY, dpr = 1;
+        let width, height, maxRadius, cx, cy, dpr = 1;
         let flushSpeedMultiplier = 1;
-        let time = 0;
+        let mainParticles = [];
+        let mistParticles = [];
 
-        let streams = [];
-        // Slightly more streams + softer drawing so Firefox still looks liquid without SVG displacement
-        const STREAM_COUNT = isFirefox ? 180 : 150;
+        const mainCount = 100;
+        const mistCount = 150;
 
         function resize() {
             const parent = canvas.parentElement;
             const cssW = parent.clientWidth;
             const cssH = parent.clientHeight;
 
-            // High-DPI / Retina support so the animation stays sharp on desktop monitors
             dpr = Math.min(window.devicePixelRatio || 1, 2.5);
             canvas.width = Math.floor(cssW * dpr);
             canvas.height = Math.floor(cssH * dpr);
             canvas.style.width = cssW + 'px';
             canvas.style.height = cssH + 'px';
-
-            // Reset transform then scale so all drawing uses CSS-pixel coordinates
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
             width = cssW;
             height = cssH;
-            centerX = width / 2;
-            centerY = height / 2;
+            cx = width / 2;
+            cy = height / 2;
+            maxRadius = Math.hypot(width, height) * 0.55;
+
+            initParticles();
         }
 
-        window.addEventListener('resize', resize);
-        resize();
+        function initParticles() {
+            mainParticles = Array.from({ length: mainCount }, (_, i) => ({
+                angle: Math.random() * Math.PI * 2,
+                radius: 20 + Math.random() * maxRadius,
+                speed: 0.0015 + Math.random() * 0.0035,
+                size: 30 + Math.random() * 25,
+                color: blueShades[i % blueShades.length],
+                opacity: 0.12 + Math.random() * 0.18
+            }));
 
-        class WaterStream {
-            constructor() {
-                this.reset(true);
-            }
-
-            reset(initial = false) {
-                const maxRadius = Math.max(width, height) * 0.65;
-                this.radius = initial ? Math.random() * maxRadius + 20 : maxRadius;
-                this.angle = Math.random() * Math.PI * 2;
-                
-                this.speed = 0.18 + Math.random() * 0.22; 
-                this.angularVelocity = 0.006 + Math.random() * 0.005;
-                this.length = (isFirefox ? 35 : 25) + Math.random() * (isFirefox ? 55 : 45);
-                this.width = (isFirefox ? 2.8 : 1.5) + Math.random() * (isFirefox ? 3.5 : 2.5);
-                
-                const blues = [
-                    'rgba(56, 189, 248, ',   // Sky blue
-                    'rgba(14, 165, 233, ',   // Deep cyan
-                    'rgba(186, 230, 253, ',  // White highlight
-                    'rgba(2, 132, 199, '     // Dark blue
-                ];
-                this.baseColor = blues[Math.floor(Math.random() * blues.length)];
-                this.opacity = (isFirefox ? 0.45 : 0.3) + Math.random() * (isFirefox ? 0.4 : 0.5);
-            }
-
-            update() {
-                const spinAcceleration = (35 / (this.radius + 15)) * flushSpeedMultiplier;
-                this.angle += this.angularVelocity * spinAcceleration;
-                this.radius -= this.speed * flushSpeedMultiplier;
-
-                if (this.radius <= 6) {
-                    this.reset();
-                }
-            }
-
-            draw() {
-                ctx.save();
-                ctx.beginPath();
-                
-                for (let i = 0; i < this.length; i++) {
-                    const r = this.radius + (i * 0.9);
-                    const a = this.angle - (i * 0.02 * (80 / (r + 15)));
-                    
-                    const x = centerX + Math.cos(a) * r;
-                    const y = centerY + Math.sin(a) * r * 0.45;
-
-                    if (i === 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                }
-
-                ctx.strokeStyle = this.baseColor + this.opacity + ')';
-                ctx.lineWidth = this.width;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                ctx.restore();
-            }
+            mistParticles = Array.from({ length: mistCount }, () => ({
+                angle: Math.random() * Math.PI * 2,
+                radius: Math.random() * maxRadius,
+                speed: 0.005 + Math.random() * 0.01,
+                size: 2 + Math.random() * 6,
+                opacity: 0.3 + Math.random() * 0.5
+            }));
         }
 
-        for (let i = 0; i < STREAM_COUNT; i++) {
-            streams.push(new WaterStream());
-        }
+        function drawCrispBubble(x, y, size, color, opacity) {
+            const g = ctx.createRadialGradient(x, y, 0, x, y, size);
+            g.addColorStop(0, `rgba(${color}, ${opacity * 1.4})`);
+            g.addColorStop(0.7, `rgba(${color}, ${opacity * 0.8})`);
+            g.addColorStop(1, "transparent");
 
-        function drawRipples() {
-            time += 0.007 * flushSpeedMultiplier;
-            ctx.save();
-            
-            for (let i = 1; i <= 4; i++) {
-                const r = ((time * 25 * i) % (Math.max(width, height) * 0.5)) + 10;
-                const alpha = Math.max(0, 0.22 - (r / (width * 0.5)));
-                ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.ellipse(centerX, centerY, r * 1.8, r * 0.75, 0, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        function drawDrainCenter() {
-            ctx.save();
-            const grad = ctx.createRadialGradient(centerX, centerY, 2, centerX, centerY, 70);
-            grad.addColorStop(0, 'rgba(2, 6, 23, 1)');
-            grad.addColorStop(0.4, 'rgba(3, 105, 161, 0.3)');
-            grad.addColorStop(1, 'rgba(3, 7, 18, 0)');
-
-            ctx.fillStyle = grad;
+            ctx.fillStyle = g;
             ctx.beginPath();
-            ctx.ellipse(centerX, centerY, 80, 36, 0, 0, Math.PI * 2);
+            ctx.arc(x, y, size, 0, Math.PI * 2);
             ctx.fill();
-            ctx.restore();
+
+            // Sharp Specular Glare Dot
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 1.8})`;
+            ctx.beginPath();
+            ctx.arc(x - size * 0.25, y - size * 0.25, size * 0.18, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function animateWater() {
-            // Slightly more persistent trails on Firefox (compensates for no SVG displacement)
-            ctx.fillStyle = isFirefox ? 'rgba(12, 74, 110, 0.16)' : 'rgba(12, 74, 110, 0.22)';
+            // Trail fade effect
+            ctx.fillStyle = "rgba(1, 8, 20, 0.28)";
             ctx.fillRect(0, 0, width, height);
 
-            drawRipples();
-            drawDrainCenter();
+            // 1. Main draining droplets with acceleration near center
+            mainParticles.forEach(p => {
+                const speedFactor = (1 + (1 - p.radius / maxRadius) * 2) * flushSpeedMultiplier;
+                p.angle -= p.speed * speedFactor;
+                p.radius -= 0.35 * speedFactor;
 
-            streams.forEach(s => {
-                s.update();
-                s.draw();
+                if (p.radius < 5) p.radius = maxRadius;
+
+                const x = cx + Math.cos(p.angle) * p.radius * 1.4;
+                const y = cy + Math.sin(p.angle) * p.radius;
+
+                const dynamicSize = p.size * (p.radius / maxRadius);
+                drawCrispBubble(x, y, Math.max(3, dynamicSize), p.color, p.opacity);
+            });
+
+            // 2. Inward mist spray
+            mistParticles.forEach(p => {
+                p.angle -= p.speed * flushSpeedMultiplier;
+                p.radius -= 0.7 * flushSpeedMultiplier;
+
+                if (p.radius < 3) p.radius = maxRadius;
+
+                const x = cx + Math.cos(p.angle) * p.radius * 1.4;
+                const y = cy + Math.sin(p.angle) * p.radius;
+
+                ctx.fillStyle = `rgba(224, 242, 254, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(x, y, p.size, 0, Math.PI * 2);
+                ctx.fill();
             });
 
             requestAnimationFrame(animateWater);
         }
 
+        window.addEventListener('resize', resize);
+        resize();
         animateWater();
 
 
