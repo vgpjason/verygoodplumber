@@ -202,12 +202,17 @@
             </section>
 
             <section>
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
                     <h3 id="currentCategoryTitle" class="text-lg font-bold text-white flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-[#0084C8]"></span>
                         Latest News Feed
                     </h3>
-                    <span id="articleCount" class="text-xs text-slate-400">Loading articles...</span>
+                    <div class="flex items-center gap-3">
+                        <span id="articleCount" class="text-xs text-slate-400">Loading articles...</span>
+                        <button type="button" onclick="triggerFlushAnimation()" class="text-xs font-semibold bg-slate-800 hover:bg-[#0084C8] text-slate-200 hover:text-white border border-slate-700 hover:border-[#0084C8] px-3 py-1.5 rounded-lg transition">
+                            💧 Refresh News
+                        </button>
+                    </div>
                 </div>
 
                 <div id="newsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -499,287 +504,52 @@
         animateWater();
 
 
-        // --- 2. CATEGORIES & RSS TEXT ENGINE ---
+        // --- 2. CATEGORIES & REAL RSS NEWS ENGINE ---
         const categories = [
             { 
                 id: 'joco', 
                 name: '📍 Johnson County & Regional Water', 
-                rssUrl: 'https://news.google.com/rss/search?q=Water+Plumbing+Johnson+County+Kansas&hl=en-US&gl=US&ceid=US:en',
+                rssUrl: 'https://news.google.com/rss/search?q=Water+OR+Plumbing+OR+WaterOne+OR+sewer+(Johnson+County+OR+Overland+Park+OR+Olathe+OR+Shawnee+OR+Lenexa)+Kansas&hl=en-US&gl=US&ceid=US:en',
                 fallback: [
                     {
-                        title: "Water One Johnson County Advisory: Main Infrastructure Upgrades Scheduled",
-                        author: "WaterOne KS Bulletin",
+                        title: "Sewer overflow resolved in Overland Park; water testing underway",
+                        author: "Local News",
                         pubDate: new Date().toISOString(),
                         link: "https://www.waterone.org",
-                        description: "Water District No. 1 of Johnson County initiates scheduled water main replacements in Overland Park and Olathe to ensure long-term service reliability."
-                    },
-                    {
-                        title: "Preparing Johnson County Homes for Sudden Midwest Freeze & Thaw Cycles",
-                        author: "Kansas City Metro Plumbing",
-                        pubDate: new Date(Date.now() - 43200000).toISOString(),
-                        link: "https://verygoodplumber.com",
-                        description: "Local guidelines for winterizing exterior hose bibbs, shutoff valves, and insulating foundation crawlspaces across Overland Park, Shawnee, and Lenexa."
-                    },
-                    {
-                        title: "Shawnee & Lenexa Homeowners Upgrade to Backflow Prevention Systems",
-                        author: "Johnson County Municipal News",
-                        pubDate: new Date(Date.now() - 86400000).toISOString(),
-                        link: "https://verygoodplumber.com",
-                        description: "New regional code emphasis on annual backflow assembly testing for residential irrigation and lawn sprinkler systems."
-                    },
-                    {
-                        title: "Hard Water Mineral Scale Management in Olathe & Gardner Tap Water",
-                        author: "Midwest Plumbing Journal",
-                        pubDate: new Date(Date.now() - 172800000).toISOString(),
-                        link: "https://verygoodplumber.com",
-                        description: "How high dissolved calcium levels in Johnson County groundwater impact tankless water heaters and fixture cartridge life span."
-                    },
-                    {
-                        title: "Trenchless Sewer Pipe Repair Gaining Popularity in Historic Prairie Village",
-                        author: "KC Regional Infrastructure",
-                        pubDate: new Date(Date.now() - 259200000).toISOString(),
-                        link: "https://verygoodplumber.com",
-                        description: "Epoxy CIPP relining allows older Johnson County homes to cure tree root intrusion in main sewer lines without excavating yards."
-                    },
-                    {
-                        title: "Kansas City Area Builders Adopt WaterSense Certified Low-Flow Fixtures",
-                        author: "KC Residential Builder",
-                        pubDate: new Date(Date.now() - 345600000).toISOString(),
-                        link: "https://verygoodplumber.com",
-                        description: "Regional homebuilders implement high-efficiency toilets and faucets to lower utility consumption across JoCo communities."
+                        description: "Regional utilities and city crews continue monitoring and maintaining water and sewer infrastructure across Johnson County communities.",
+                        image: null
                     }
                 ]
             },
             { 
                 id: 'plumbing', 
                 name: '🔧 Plumbing', 
-                rssUrl: 'https://www.pmmag.com/rss/topic/2807',
-                fallback: [
-                    {
-                        title: "Mastering PEX-a vs. Press Fittings in Modern Piping Systems",
-                        author: "Plumbing Craftsman Journal",
-                        pubDate: new Date().toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Evaluating flame-free press systems, labor-saving crimp tools, and long-term durability in Midwestern residential pipe replacement projects."
-                    },
-                    {
-                        title: "Smart Leak Detection Systems Becoming Standard in Residential Builds",
-                        author: "Plumbing Tech Review",
-                        pubDate: new Date(Date.now() - 86400000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Automatic main water shut-off valves and IoT water sensors prevent catastrophic flood damages, earning homeowners insurance discounts."
-                    },
-                    {
-                        title: "Main Drain Pipe Inspection: Trenchless Relining Advances",
-                        author: "Sewer & Drain Tech",
-                        pubDate: new Date(Date.now() - 172800000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "How camera inspections and epoxy pipe relining technology fix underground root intrusion without destroying lawns or driveways."
-                    },
-                    {
-                        title: "Preventing Galvanized Pipe Corrosion in Older Home Renovations",
-                        author: "Piping & Valves Today",
-                        pubDate: new Date(Date.now() - 259200000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Identifying pinhole leaks and pressure drops caused by internal rust build-up inside legacy galvanized steel piping."
-                    },
-                    {
-                        title: "Pressure Reducing Valve (PRV) Sizing and Municipal Pressure Spikes",
-                        author: "Master Plumber Digest",
-                        pubDate: new Date(Date.now() - 345600000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Why maintaining residential water pressure below 80 PSI prevents premature water heater failure and bursting supply lines."
-                    },
-                    {
-                        title: "Sump Pump Maintenance: Backup Battery Tech Compared",
-                        author: "Basement Waterproofing Mag",
-                        pubDate: new Date(Date.now() - 432000000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Dual-pump setups with AGM or Lithium backup batteries protect basements during heavy spring thunderstorms and power outages."
-                    }
-                ]
+                rssUrl: 'https://www.pmmag.com/rss/topic/2650-plumbing-news',
+                fallback: []
             },
             { 
                 id: 'waterheaters', 
                 name: '🔥 Water Heaters', 
-                rssUrl: 'https://www.pmmag.com/rss/topic/water-heaters',
-                fallback: [
-                    {
-                        title: "Modern Hybrid Heat Pump Water Heater Efficiency & Rebates",
-                        author: "Water Heater Insider",
-                        pubDate: new Date().toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "How high-efficiency hybrid heat pump water heaters slash electric bills up to 70% and qualify for federal utility tax credits."
-                    },
-                    {
-                        title: "Tankless Water Heater Maintenance: Descaling & Tank Flush Guide",
-                        author: "Master Plumber Insights",
-                        pubDate: new Date(Date.now() - 90000000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Why annual vinegar flushes remove hard water scale buildup, ensuring endless hot water and preserving heat exchanger lifespans."
-                    },
-                    {
-                        title: "Gas Tank vs. Electric Tankless: Sizing Hot Water Systems Correctly",
-                        author: "Residential Hydronics",
-                        pubDate: new Date(Date.now() - 180000000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Calculating peak gallons-per-minute (GPM) demand for multi-bathroom homes during cold winter incoming water temperatures."
-                    },
-                    {
-                        title: "Thermal Expansion Tanks: Code Enforcement and Safety Relief Valves",
-                        author: "Water Heater Safety Journal",
-                        pubDate: new Date(Date.now() - 270000000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Understanding closed-loop water systems, thermal expansion pressures, and preventing discharge from T&P safety valves."
-                    },
-                    {
-                        title: "Anode Rod Inspection: Extending Tank Life by 5 to 10 Years",
-                        author: "Plumbing Service Pro",
-                        pubDate: new Date(Date.now() - 360000000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Replacing sacrificial magnesium or powered titanium anode rods prevents aggressive water from rusting tank interiors."
-                    },
-                    {
-                        title: "Recirculating Hot Water Pumps: Instant Hot Water at Every Faucet",
-                        author: "Comfort Plumbing News",
-                        pubDate: new Date(Date.now() - 450000000).toISOString(),
-                        link: "https://www.pmmag.com",
-                        description: "Smart timer-controlled pumps deliver instantaneous hot water while eliminating thousands of gallons of wasted tap water annually."
-                    }
-                ]
+                rssUrl: 'https://www.pmmag.com/rss/17',
+                fallback: []
             },
             { 
                 id: 'toilets', 
-                name: '🚽 New Toilets', 
-                rssUrl: 'https://www.contractormag.com/rss',
-                fallback: [
-                    {
-                        title: "High-Efficiency Dual-Flush Toilets: Clogging Solutions & GPF Codes",
-                        author: "Bathroom Fixture Monthly",
-                        pubDate: new Date().toISOString(),
-                        link: "https://www.contractormag.com",
-                        description: "Comparing 1.28 GPF and dual-flush bowl designs engineered with wider trapways to eliminate clogs and reduce municipal water waste."
-                    },
-                    {
-                        title: "Bidet Toilet Seats & Smart Toilets: Electrical & Water Line Rough-Ins",
-                        author: "Modern Fixtures Review",
-                        pubDate: new Date(Date.now() - 100000000).toISOString(),
-                        link: "https://www.contractormag.com",
-                        description: "Key plumbing and GFCI electrical requirements for retrofitting heated bidet toilet seats and luxury integrated smart toilets."
-                    },
-                    {
-                        title: "Solving Silent Toilet Leaks: Flapper Replacements vs. Fill Valve Upgrades",
-                        author: "Home Plumbing Advisor",
-                        pubDate: new Date(Date.now() - 200000000).toISOString(),
-                        link: "https://www.contractormag.com",
-                        description: "Diagnosing running toilets, phantom flushes, worn wax ring seals, and failing tank bolts before subfloor water damage occurs."
-                    },
-                    {
-                        title: "Wall-Hung Toilets & Concealed Tank Systems in Modern Remodels",
-                        author: "Design & Plumbing Trends",
-                        pubDate: new Date(Date.now() - 300000000).toISOString(),
-                        link: "https://www.contractormag.com",
-                        description: "In-wall carrier frame installation, wall stud requirements, and space-saving advantages in small bathroom remodels."
-                    },
-                    {
-                        title: "Comfort Height vs. Standard Height Toilets: ADA Compliance",
-                        author: "Residential Plumbing Tech",
-                        pubDate: new Date(Date.now() - 400000000).toISOString(),
-                        link: "https://www.contractormag.com",
-                        description: "Why 16.5-inch seat height toilets are becoming the standard choice for ergonomic accessibility and modern home updates."
-                    },
-                    {
-                        title: "Pressure-Assisted Toilets: Commercial Flushing Power for Homes",
-                        author: "Fixture Engineering",
-                        pubDate: new Date(Date.now() - 500000000).toISOString(),
-                        link: "https://www.contractormag.com",
-                        description: "Vessel-in-tank technology harnesses compressed air to deliver high-velocity flushes for heavy-use residential bathrooms."
-                    }
-                ]
+                name: '🚽 Bath & Kitchen', 
+                rssUrl: 'https://www.pmmag.com/rss/topic/2655-bath-kitchen-pro',
+                fallback: []
             },
             { 
                 id: 'faucets', 
-                name: '🚰 New Faucets', 
-                rssUrl: 'https://www.supplyht.com/rss',
-                fallback: [
-                    {
-                        title: "Touchless & Motion-Sensor Kitchen Faucets: Reliability & Battery Tech",
-                        author: "Supply House Times",
-                        pubDate: new Date().toISOString(),
-                        link: "https://www.supplyht.com",
-                        description: "Analyzing ceramic disc valve cartridges, hands-free infrared sensors, and commercial-grade pull-down spray heads for modern kitchens."
-                    },
-                    {
-                        title: "Matte Black vs. Brushed Brass: Long-Term Finish Durability Guide",
-                        author: "Interior Plumbing Styles",
-                        pubDate: new Date(Date.now() - 110000000).toISOString(),
-                        link: "https://www.supplyht.com",
-                        description: "Physical Vapor Deposition (PVD) finish coatings prevent tarnishing, scratching, and water spot corrosion on premium lavatory faucets."
-                    },
-                    {
-                        title: "How Thermostatic Shower Faucet Valves Prevent Water Scalding",
-                        author: "Contractor Safety Tech",
-                        pubDate: new Date(Date.now() - 210000000).toISOString(),
-                        link: "https://www.supplyht.com",
-                        description: "Pressure-balancing and thermostatic mixing valve regulations engineered to keep water temperature constant when dishwasher flushes occur."
-                    },
-                    {
-                        title: "Commercial Pulldown Faucets for Residential Gourmet Kitchens",
-                        author: "Kitchen & Bath Business",
-                        pubDate: new Date(Date.now() - 310000000).toISOString(),
-                        link: "https://www.supplyht.com",
-                        description: "High-arch spring spouts, magnetic docking sprayers, and solid stainless steel construction for high-volume kitchen prep."
-                    },
-                    {
-                        title: "Widespread vs. Centerset Lavatory Faucets: Drilling Rough-In Guide",
-                        author: "Master Plumbing Installer",
-                        pubDate: new Date(Date.now() - 410000000).toISOString(),
-                        link: "https://www.supplyht.com",
-                        description: "Step-by-step sizing for 8-inch widespread, 4-inch centerset, and single-hole vanity faucet retrofits in bathroom upgrades."
-                    },
-                    {
-                        title: "Drip-Free Ceramic Disc Valve Cartridges Explained",
-                        author: "Supply Chain Insights",
-                        pubDate: new Date(Date.now() - 510000000).toISOString(),
-                        link: "https://www.supplyht.com",
-                        description: "Why diamond-hard ceramic discs replaced traditional rubber washers, providing decades of leak-free handle operation."
-                    }
-                ]
+                name: '🚰 Supply House News', 
+                rssUrl: 'https://www.supplyht.com/rss/17',
+                fallback: []
             },
             { 
                 id: 'waterquality', 
-                name: '💧 Water Filtration & Softeners', 
-                rssUrl: 'https://www.waterworld.com/rss',
-                fallback: [
-                    {
-                        title: "Whole-Home Water Filtration Systems: Softeners vs. Carbon Media",
-                        author: "Water Quality Digest",
-                        pubDate: new Date().toISOString(),
-                        link: "https://www.waterworld.com",
-                        description: "An in-depth guide on removing municipal chlorine, hard minerals, and sediment to extend pipe life and provide ultra-pure tap water."
-                    },
-                    {
-                        title: "Reverse Osmosis Under-Sink Drinking Water Systems Explained",
-                        author: "Clean Water Tech",
-                        pubDate: new Date(Date.now() - 90000000).toISOString(),
-                        link: "https://www.waterworld.com",
-                        description: "Multi-stage RO filtration removes microplastics, heavy metals, and PFAS chemicals directly at your kitchen sink tap."
-                    },
-                    {
-                        title: "Salt-Free Water Conditioners vs. Traditional Ion-Exchange Softeners",
-                        author: "Eco Water Solutions",
-                        pubDate: new Date(Date.now() - 180000000).toISOString(),
-                        link: "https://www.waterworld.com",
-                        description: "Comparing Template Assisted Crystallization (TAC) scale prevention against classic brine tank softener systems."
-                    },
-                    {
-                        title: "UV Water Disinfection Systems for Private Well Water Quality",
-                        author: "Well Water Weekly",
-                        pubDate: new Date(Date.now() - 270000000).toISOString(),
-                        link: "https://www.waterworld.com",
-                        description: "Ultraviolet light purification neutralizes bacteria and microorganisms without adding chemicals to rural home water supplies."
-                    }
-                ]
+                name: '💧 Water Filtration & Treatment', 
+                rssUrl: 'https://www.pmmag.com/rss/topic/2657-water-treatment',
+                fallback: []
             }
         ];
 
@@ -809,7 +579,6 @@
             const inactive = 'px-5 py-1.5 rounded-md text-xs font-semibold transition text-slate-300 hover:text-white';
             const active = 'px-5 py-1.5 rounded-md text-xs font-semibold transition bg-[#0084C8] text-white shadow';
 
-            // Hide all pages
             newsSec.classList.add('hidden');
             aboutSec.classList.add('hidden');
             inflowSec.classList.add('hidden');
@@ -829,6 +598,34 @@
             }
         }
 
+        function extractImageFromItem(item) {
+            // Prefer real enclosure images only (no fake placeholders)
+            if (item.enclosure) {
+                const enc = item.enclosure;
+                const link = enc.link || enc.url || '';
+                const type = (enc.type || '').toLowerCase();
+                if (link && (type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(link))) {
+                    return link;
+                }
+            }
+            if (item.thumbnail && String(item.thumbnail).startsWith('http') && !/placeholder|default|no[-_]?image/i.test(item.thumbnail)) {
+                return item.thumbnail;
+            }
+            // Try first <img src> inside description HTML if present
+            if (item.description && /<img/i.test(item.description)) {
+                const m = String(item.description).match(/<img[^>]+src=["']([^"']+)["']/i);
+                if (m && m[1] && m[1].startsWith('http')) return m[1];
+            }
+            return null;
+        }
+
+        function cleanDescription(html) {
+            if (!html) return '';
+            let t = String(html).replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+            if (t.length > 200) t = t.substring(0, 200) + '...';
+            return t;
+        }
+
         async function fetchNews(category) {
             const newsGrid = document.getElementById('newsGrid');
             const currentCategoryTitle = document.getElementById('currentCategoryTitle');
@@ -836,53 +633,64 @@
 
             newsGrid.innerHTML = '';
             currentCategoryTitle.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-[#0084C8]"></span> ${category.name}`;
-            articleCount.innerText = 'Loading articles...';
+            articleCount.innerText = 'Loading real news…';
 
-            // Always start with reliable curated fallback so articles appear immediately
+            // Show fallback immediately if any, then upgrade when live feed arrives
             allArticles = (category.fallback && category.fallback.length) ? category.fallback.slice() : [];
-            renderArticles(allArticles);
+            if (allArticles.length) renderArticles(allArticles);
 
-            // Try live RSS in the background (non-blocking). Many free RSS converters
-            // are unreliable or rate-limited, so we never depend on them.
-            try {
+            const tryFetch = async (apiBase) => {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4500);
-
-                const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(category.rssUrl)}&count=15`;
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const apiUrl = `${apiBase}?rss_url=${encodeURIComponent(category.rssUrl)}`;
                 const res = await fetch(apiUrl, { signal: controller.signal });
                 clearTimeout(timeoutId);
-
-                if (!res.ok) throw new Error('RSS response not ok');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
-
-                if (data && data.status === 'ok' && Array.isArray(data.items) && data.items.length > 0) {
-                    const liveArticles = data.items.map((item) => {
-                        let cleanDesc = '';
-                        if (item.description) {
-                            cleanDesc = String(item.description).replace(/<[^>]*>?/gm, '').trim();
-                            if (cleanDesc.length > 180) cleanDesc = cleanDesc.substring(0, 180) + '...';
-                        }
-                        return {
-                            title: item.title || 'Untitled',
-                            author: item.author || category.name.replace(/^[^\w]+/, '').trim() || 'Plumbing News',
-                            pubDate: item.pubDate || new Date().toISOString(),
-                            link: item.link || '#',
-                            description: cleanDesc || 'Click below to read the full article.'
-                        };
-                    }).filter(a => a.title && a.title.length > 3);
-
-                    if (liveArticles.length >= 3) {
-                        allArticles = liveArticles;
-                        // Only re-render if user hasn't typed a search query
-                        const searchVal = (document.getElementById('searchInput') || {}).value || '';
-                        if (!searchVal.trim()) {
-                            renderArticles(allArticles);
-                        }
-                    }
+                if (!data || data.status !== 'ok' || !Array.isArray(data.items) || data.items.length === 0) {
+                    throw new Error('Empty or invalid feed');
                 }
-            } catch (err) {
-                // Keep the curated fallback — this is expected and preferred for reliability
-                console.log('Live feed unavailable, using curated local articles.');
+                return data.items.map((item) => {
+                    const image = extractImageFromItem(item);
+                    return {
+                        title: item.title || 'Untitled',
+                        author: (item.author || '').replace(/.*\(([^)]+)\).*/, '$1').trim() || category.name.replace(/^[^\w]+/, '').trim() || 'Plumbing News',
+                        pubDate: item.pubDate || new Date().toISOString(),
+                        link: item.link || '#',
+                        description: cleanDescription(item.description),
+                        image: image
+                    };
+                }).filter(a => a.title && a.title.length > 3);
+            };
+
+            // Primary: rss2json (no count param — count requires paid key)
+            // Fallback: alternate endpoint path sometimes used by the same service
+            const endpoints = [
+                'https://api.rss2json.com/v1/api.json',
+                'https://rss2json.com/api.json'
+            ];
+
+            let liveArticles = null;
+            for (const ep of endpoints) {
+                try {
+                    liveArticles = await tryFetch(ep);
+                    if (liveArticles && liveArticles.length >= 2) break;
+                } catch (err) {
+                    console.log('Feed attempt failed via', ep, err.message || err);
+                }
+            }
+
+            if (liveArticles && liveArticles.length >= 2) {
+                allArticles = liveArticles;
+                const searchVal = (document.getElementById('searchInput') || {}).value || '';
+                if (!searchVal.trim()) {
+                    renderArticles(allArticles);
+                }
+            } else if (!allArticles.length) {
+                articleCount.innerText = 'Unable to load live feed right now — try again shortly';
+                newsGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">
+                    Live news feed is temporarily unavailable. Click <strong>Flush the News</strong> to retry, or check back soon.
+                </div>`;
             }
         }
 
@@ -901,7 +709,7 @@
             newsGrid.innerHTML = '';
 
             const list = Array.isArray(articles) ? articles : [];
-            articleCount.innerText = `${list.length} articles available`;
+            articleCount.innerText = `${list.length} article${list.length === 1 ? '' : 's'} available`;
 
             if (list.length === 0) {
                 newsGrid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">No articles matching your search criteria.</div>`;
@@ -925,15 +733,27 @@
                 const safeAuthor = escapeHtml(item.author || 'Plumbing News');
                 const safeDesc = escapeHtml(item.description || '');
                 const safeLink = (item.link && String(item.link).startsWith('http')) ? item.link : '#';
+                const hasImage = item.image && String(item.image).startsWith('http');
+
+                const thumbBlock = hasImage
+                    ? `<a href="${safeLink}" target="_blank" rel="noopener noreferrer" class="block aspect-[16/9] overflow-hidden bg-slate-800 border-b border-slate-800">
+                            <img src="${escapeHtml(item.image)}" alt="" loading="lazy" referrerpolicy="no-referrer"
+                                 class="w-full h-full object-cover transition duration-300 hover:scale-[1.03]"
+                                 onerror="this.closest('a').style.display='none'" />
+                       </a>`
+                    : '';
 
                 card.innerHTML = `
+                    ${thumbBlock}
                     <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
                         <div>
-                            <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
+                            <div class="flex items-center justify-between text-xs text-slate-400 mb-3 gap-2">
                                 <span class="bg-slate-800 text-[#0084C8] px-2.5 py-1 rounded border border-slate-700 font-semibold line-clamp-1 max-w-[180px]">${safeAuthor}</span>
-                                <time class="text-slate-400">${date}</time>
+                                <time class="text-slate-400 shrink-0">${date}</time>
                             </div>
-                            <h4 class="font-bold text-slate-100 text-base mb-2 hover:text-[#0084C8] transition leading-snug">${safeTitle}</h4>
+                            <h4 class="font-bold text-slate-100 text-base mb-2 hover:text-[#0084C8] transition leading-snug">
+                                <a href="${safeLink}" target="_blank" rel="noopener noreferrer">${safeTitle}</a>
+                            </h4>
                             <p class="text-xs text-slate-400 line-clamp-4 leading-relaxed">${safeDesc}</p>
                         </div>
                         <a href="${safeLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0084C8] hover:text-sky-300 transition pt-3 border-t border-slate-800/80">
