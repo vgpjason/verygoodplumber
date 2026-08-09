@@ -1,0 +1,126 @@
+:root {
+    --brand-blue: #0084C8;
+    --brand-green: #28A745;
+    --brand-red: #E53E3E;
+    --brand-black: #000000;
+}
+
+/* Logo styling */
+.logo-container {
+    background-color: transparent;
+    border-radius: 8px;
+    padding: 0;
+    display: inline-block;
+    position: relative; /* anchor for the 1px star hit-target */
+}
+.logo-img {
+    max-height: 220px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+/* Invisible 1×1 click target at the center of the AI star on the logo */
+.logo-star-pixel {
+    position: absolute;
+    left: 94.48%;
+    top: 94.48%;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    opacity: 0;
+    cursor: default;
+    z-index: 5;
+    /* Expand hit area slightly via transparent padding without changing visual size:
+       keep the visible/layout box at 1×1; use a larger invisible overlay via outline-offset trick won't work.
+       Use transform so the element stays 1×1 but is easier? User asked for a pixel — keep 1×1. */
+    transform: translate(-50%, -50%);
+    text-decoration: none;
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
+    overflow: hidden;
+}
+
+/* Water Header Container */
+.flush-header {
+    position: relative;
+    background: radial-gradient(circle at 50% 50%, #0c4a6e 0%, #020617 55%, #010814 100%);
+    overflow: hidden;
+}
+
+/* Drain particle canvas (accelerating plunge effect) */
+#vortexCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    filter: blur(2px);
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+/* Full Page Flush Overlay */
+#flushOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, rgba(14, 165, 233, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#flushOverlay.flushing {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.flush-spinner {
+    width: 140px;
+    height: 140px;
+    border: 8px solid rgba(255, 255, 255, 0.2);
+    border-top: 8px solid #38bdf8;
+    border-right: 8px solid #0284c7;
+    border-radius: 50%;
+    animation: flushVortex 0.7s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+@keyframes flushVortex {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(360deg) scale(0.65); }
+    100% { transform: rotate(720deg) scale(0.1); }
+}
+
+/* Card animations & Hover effects */
+.news-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeIn 0.4s ease-out forwards;
+}
+.news-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px -5px rgba(0, 132, 200, 0.35), 0 8px 10px -6px rgba(0, 132, 200, 0.2);
+    border-color: var(--brand-blue);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: var(--brand-blue); border-radius: 4px; }
