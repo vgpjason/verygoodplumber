@@ -748,6 +748,7 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    switchPage('inflow');
     showRandomIpcCode();
     setupCategories();
     fetchNews(activeCategory);
